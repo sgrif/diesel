@@ -253,7 +253,7 @@ impl<T, U, V> UpdateStatement<T, U, V, NoReturningClause> {
     /// # #[macro_use] extern crate diesel;
     /// # include!("../../doctest_setup.rs");
     /// #
-    /// # #[cfg(feature = "postgres")]
+    /// # #[cfg(any(feature = "postgres", feature = "unstable_pure_rust_postgres"))]
     /// # fn main() {
     /// #     use schema::users::dsl::*;
     /// #     let connection = establish_connection();
@@ -263,7 +263,7 @@ impl<T, U, V> UpdateStatement<T, U, V, NoReturningClause> {
     ///     .get_result(&connection);
     /// assert_eq!(Ok("Dean".to_string()), updated_name);
     /// # }
-    /// # #[cfg(not(feature = "postgres"))]
+    /// # #[cfg(not(any(feature = "postgres", feature = "unstable_pure_rust_postgres")))]
     /// # fn main() {}
     /// ```
     pub fn returning<E>(self, returns: E) -> UpdateStatement<T, U, V, ReturningClause<E>>

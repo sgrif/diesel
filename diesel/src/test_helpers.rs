@@ -13,8 +13,11 @@ cfg_if! {
         pub fn database_url() -> String {
             String::from(":memory:")
         }
-    } else if #[cfg(feature = "postgres")] {
+    } else if #[cfg(any(feature = "postgres", feature = "unstable_pure_rust_postgres"))] {
+        #[cfg(feature = "postgres")]
         pub type TestConnection = PgConnection;
+        #[cfg(feature = "unstable_pure_rust_postgres")]
+        pub type TestConnection = PostgresConnection;
 
         pub fn connection() -> TestConnection {
             pg_connection()
@@ -45,20 +48,20 @@ cfg_if! {
         compile_error!(
             "At least one backend must be used to test this crate.\n \
             Pass argument `--features \"<backend>\"` with one or more of the following backends, \
-            'mysql', 'postgres', or 'sqlite'. \n\n \
+            'mysql', 'postgres', 'sqlite', or 'unstable_pure_rust_postgres'. \n\n \
             ex. cargo test --features \"mysql postgres sqlite\"\n"
         );
     }
 }
 
-#[cfg(feature = "postgres")]
-pub fn pg_connection() -> PgConnection {
-    let conn = PgConnection::establish(&pg_database_url()).unwrap();
+#[cfg(any(feature = "postgres", feature = "unstable_pure_rust_postgres"))]
+pub fn pg_connection() -> TestConnection {
+    let conn = TestConnection::establish(&pg_database_url()).unwrap();
     conn.begin_test_transaction().unwrap();
     conn
 }
 
-#[cfg(feature = "postgres")]
+#[cfg(any(feature = "postgres", feature = "unstable_pure_rust_postgres"))]
 pub fn pg_database_url() -> String {
     dotenv::var("PG_DATABASE_URL")
         .or_else(|_| dotenv::var("DATABASE_URL"))

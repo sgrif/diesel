@@ -24,7 +24,7 @@ use crate::query_dsl::methods::SelectDsl;
 /// # #[macro_use] extern crate diesel;
 /// # include!("../doctest_setup.rs");
 /// #
-/// # #[cfg(feature = "postgres")]
+/// # #[cfg(any(feature = "postgres", feature = "unstable_pure_rust_postgres"))]
 /// # fn main() {
 /// #     use schema::users::dsl::*;
 /// #     let connection = establish_connection();
@@ -37,7 +37,7 @@ use crate::query_dsl::methods::SelectDsl;
 /// // getting the result.
 /// assert_eq!(Ok((1, "James".to_string())), updated_row);
 /// # }
-/// # #[cfg(not(feature = "postgres"))]
+/// # #[cfg(not(any(feature = "postgres", feature = "unstable_pure_rust_postgres")))]
 /// # fn main() {}
 /// ```
 ///
@@ -57,7 +57,7 @@ use crate::query_dsl::methods::SelectDsl;
 /// #     }
 /// # }
 /// #
-/// # #[cfg(feature = "postgres")]
+/// # #[cfg(any(feature = "postgres", feature = "unstable_pure_rust_postgres"))]
 /// # fn main() {
 /// # use self::users::dsl::*;
 /// # let connection = establish_connection();
@@ -74,7 +74,7 @@ use crate::query_dsl::methods::SelectDsl;
 ///
 /// assert_eq!(Ok((1, "James".to_string(), "Bond".to_string())), updated_row);
 /// # }
-/// # #[cfg(not(feature = "postgres"))]
+/// # #[cfg(not(any(feature = "postgres", feature = "unstable_pure_rust_postgres")))]
 /// # fn main() {}
 /// ```
 pub fn update<T: IntoUpdateTarget>(source: T) -> UpdateStatement<T::Table, T::WhereClause> {
@@ -295,7 +295,7 @@ pub fn delete<T: IntoUpdateTarget>(source: T) -> DeleteStatement<T::Table, T::Wh
 /// # #[macro_use] extern crate diesel;
 /// # include!("../doctest_setup.rs");
 /// #
-/// # #[cfg(feature = "postgres")]
+/// # #[cfg(any(feature = "postgres", feature = "unstable_pure_rust_postgres"))]
 /// # fn main() {
 /// #     use schema::users::dsl::*;
 /// #     let connection = establish_connection();
@@ -308,7 +308,7 @@ pub fn delete<T: IntoUpdateTarget>(source: T) -> DeleteStatement<T::Table, T::Wh
 ///     .get_results(&connection);
 /// assert_eq!(Ok(vec!["Diva Plavalaguna".to_string(), "Father Vito Cornelius".to_string()]), inserted_names);
 /// # }
-/// # #[cfg(not(feature = "postgres"))]
+/// # #[cfg(not(any(feature = "postgres", feature = "unstable_pure_rust_postgres")))]
 /// # fn main() {}
 /// ```
 pub fn insert_into<T>(target: T) -> IncompleteInsertStatement<T, Insert> {
@@ -335,7 +335,7 @@ pub fn insert_into<T>(target: T) -> IncompleteInsertStatement<T, Insert> {
 /// #     run_test().unwrap();
 /// # }
 /// #
-/// # #[cfg(not(feature = "postgres"))]
+/// # #[cfg(not(any(feature = "postgres", feature = "unstable_pure_rust_postgres")))]
 /// # fn run_test() -> QueryResult<()> {
 /// #     use schema::users::dsl::*;
 /// #     use diesel::{delete, insert_or_ignore_into};
@@ -358,7 +358,7 @@ pub fn insert_into<T>(target: T) -> IncompleteInsertStatement<T, Insert> {
 /// #     Ok(())
 /// # }
 /// #
-/// # #[cfg(feature = "postgres")]
+/// # #[cfg(any(feature = "postgres", feature = "unstable_pure_rust_postgres"))]
 /// # fn run_test() -> QueryResult<()> {
 /// #     Ok(())
 /// # }
@@ -390,7 +390,7 @@ where
 /// # #[macro_use] extern crate diesel;
 /// # include!("../doctest_setup.rs");
 /// #
-/// # #[cfg(not(feature = "postgres"))]
+/// # #[cfg(not(any(feature = "postgres", feature = "unstable_pure_rust_postgres")))]
 /// # fn main() {
 /// #     use schema::users::dsl::*;
 /// #     use diesel::{insert_into, replace_into};
@@ -413,7 +413,7 @@ where
 /// let names = users.select(name).order(id).load::<String>(&conn);
 /// assert_eq!(Ok(vec!["Jim".into(), "Tess".into()]), names);
 /// # }
-/// # #[cfg(feature = "postgres")] fn main() {}
+/// # #[cfg(any(feature = "postgres", feature = "unstable_pure_rust_postgres"))] fn main() {}
 pub fn replace_into<T>(target: T) -> IncompleteInsertStatement<T, Replace> {
     IncompleteInsertStatement::new(target, Replace)
 }

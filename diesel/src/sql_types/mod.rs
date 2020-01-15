@@ -355,7 +355,7 @@ pub struct Timestamp;
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Nullable<ST: NotNull>(ST);
 
-#[cfg(feature = "postgres")]
+#[cfg(any(feature = "postgres", feature = "unstable_pure_rust_postgres"))]
 pub use crate::pg::types::sql_types::*;
 
 #[cfg(feature = "mysql")]
@@ -422,7 +422,7 @@ pub trait TypeMetadata {
     ///
     /// For most backends, which don't support user defined types, this will
     /// be `()`.
-    type MetadataLookup;
+    type MetadataLookup: ?Sized;
 }
 
 /// A marker trait indicating that a SQL type is not null.
