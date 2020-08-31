@@ -7,6 +7,8 @@ use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 
 use crate::result::{ConnectionError, ConnectionResult};
+
+#[cfg(not(windows))]
 use mysqlclient_sys::mysql_ssl_mode;
 
 pub struct ConnectionOptions {
@@ -16,6 +18,7 @@ pub struct ConnectionOptions {
     database: Option<CString>,
     port: Option<u16>,
     unix_socket: Option<CString>,
+    #[cfg(not(windows))]
     ssl_mode: Option<mysql_ssl_mode>,
 }
 
@@ -44,6 +47,7 @@ impl ConnectionOptions {
             _ => None,
         };
 
+        #[cfg(not(windows))]
         let ssl_mode = match query_pairs.get("ssl_mode") {
             Some(v) => {
                 let ssl_mode = match v.to_lowercase().as_str() {
@@ -86,6 +90,7 @@ impl ConnectionOptions {
             database: database,
             port: url.port(),
             unix_socket: unix_socket,
+            #[cfg(not(windows))]
             ssl_mode: ssl_mode,
         })
     }
@@ -114,6 +119,7 @@ impl ConnectionOptions {
         self.unix_socket.as_ref().map(|x| &**x)
     }
 
+    #[cfg(not(windows))]
     pub fn ssl_mode(&self) -> Option<mysql_ssl_mode> {
         self.ssl_mode
     }
@@ -253,6 +259,7 @@ fn unix_socket_tests() {
     );
 }
 
+#[cfg(not(windows))]
 #[test]
 fn ssl_mode() {
     let ssl_mode = |url| ConnectionOptions::parse(url).unwrap().ssl_mode();
