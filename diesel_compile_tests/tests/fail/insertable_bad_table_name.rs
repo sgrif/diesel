@@ -8,43 +8,43 @@ table! {
 }
 
 #[derive(Insertable)]
-#[table_name = "self::users"]
+#[diesel(table_name = users)]
 struct UserOk {
     id: i32,
 }
 
 #[derive(Insertable)]
-#[table_name(self::users)]
+#[diesel(table_name(users))]
 struct UserWarn {
     id: i32,
 }
 
 #[derive(Insertable)]
-#[table_name]
+#[diesel(table_name)]
 struct UserError1 {
     id: i32,
 }
 
 #[derive(Insertable)]
-#[table_name = true]
+#[diesel(table_name = true)]
 struct UserError2 {
     id: i32,
 }
 
 #[derive(Insertable)]
-#[table_name = ""]
+#[diesel(table_name = "")]
 struct UserError3 {
     id: i32,
 }
 
 #[derive(Insertable)]
-#[table_name = "not a path"]
+#[diesel(table_name = "not a path")]
 struct UserError4 {
     id: i32,
 }
 
 #[derive(Insertable)]
-#[table_name = "does::not::exist"]
+#[diesel(table_name = does::not::exist)]
 struct UserError5 {
     id: i32,
 }

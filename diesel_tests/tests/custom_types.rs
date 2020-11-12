@@ -16,11 +16,11 @@ table! {
 }
 
 #[derive(SqlType)]
-#[postgres(type_name = "my_type")]
+#[diesel(postgres_type(type_name = "my_type"))]
 pub struct MyType;
 
 #[derive(Debug, PartialEq, FromSqlRow, AsExpression)]
-#[sql_type = "MyType"]
+#[diesel(sql_type = MyType)]
 pub enum MyEnum {
     Foo,
     Bar,
@@ -47,7 +47,7 @@ impl FromSql<MyType, Pg> for MyEnum {
 }
 
 #[derive(Insertable, Queryable, Identifiable, Debug, PartialEq)]
-#[table_name = "custom_types"]
+#[diesel(table_name = custom_types)]
 struct HasCustomTypes {
     id: i32,
     custom_enum: MyEnum,
@@ -95,11 +95,11 @@ table! {
 }
 
 #[derive(SqlType)]
-#[postgres(type_name = "my_type", type_schema = "custom_schema")]
+#[diesel(postgres_type(type_name = "my_type", type_schema = "custom_schema"))]
 pub struct MyTypeInCustomSchema;
 
 #[derive(Debug, PartialEq, FromSqlRow, AsExpression)]
-#[sql_type = "MyTypeInCustomSchema"]
+#[diesel(sql_type = MyTypeInCustomSchema)]
 pub enum MyEnumInCustomSchema {
     Foo,
     Bar,
@@ -126,7 +126,7 @@ impl FromSql<MyTypeInCustomSchema, Pg> for MyEnumInCustomSchema {
 }
 
 #[derive(Insertable, Queryable, Identifiable, Debug, PartialEq)]
-#[table_name = "custom_types_with_custom_schema"]
+#[diesel(table_name = custom_types_with_custom_schema)]
 struct HasCustomTypesInCustomSchema {
     id: i32,
     custom_enum: MyEnumInCustomSchema,

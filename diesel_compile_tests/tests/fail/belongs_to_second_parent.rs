@@ -14,20 +14,20 @@ table! {
 }
 
 #[derive(Identifiable)]
-#[table_name = "bar"]
+#[diesel(table_name = bar)]
 struct Bar {
     id: i32,
 }
 
 #[derive(Identifiable)]
-#[table_name = "bar"]
+#[diesel(table_name = bar)]
 struct Baz {
     id: i32,
 }
 
 #[derive(Associations)]
-#[belongs_to(Bar, Baz)]
-#[table_name = "foo"]
+#[diesel(belongs_to(Bar, Baz))]
+#[diesel(table_name = foo)]
 struct Foo {
     bar_id: i32,
 }

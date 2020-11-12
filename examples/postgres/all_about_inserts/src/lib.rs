@@ -24,7 +24,7 @@ mod schema {
 use schema::users;
 
 #[derive(Deserialize, Insertable)]
-#[table_name = "users"]
+#[diesel(table_name = users)]
 pub struct UserForm<'a> {
     name: &'a str,
     hair_color: Option<&'a str>,

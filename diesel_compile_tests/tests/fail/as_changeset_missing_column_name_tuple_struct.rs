@@ -10,7 +10,7 @@ table! {
 }
 
 #[derive(AsChangeset)]
-#[table_name = "users"]
-struct User(i32, #[column_name = "name"] String, String);
+#[diesel(table_name = users)]
+struct User(i32, #[diesel(column_name = name)] String, String);
 
 fn main() {}

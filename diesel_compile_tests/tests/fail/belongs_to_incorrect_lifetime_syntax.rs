@@ -15,14 +15,14 @@ table! {
 }
 
 #[derive(Identifiable)]
-#[table_name = "foo"]
+#[diesel(table_name = foo)]
 struct Foo<'a> {
     id: i32,
     _marker: ::std::marker::PhantomData<&'a ()>,
 }
 
 #[derive(Associations)]
-#[belongs_to(parent = "Foo<'a>")]
+#[diesel(belongs_to(Foo<'a>))]
 struct Bar {
     foo_id: i32,
 }

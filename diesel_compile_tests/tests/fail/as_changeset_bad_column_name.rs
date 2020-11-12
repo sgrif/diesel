@@ -8,15 +8,15 @@ table! {
 }
 
 #[derive(AsChangeset)]
-#[table_name = "users"]
+#[diesel(table_name = users)]
 struct UserStruct {
     name: String,
-    #[column_name = "hair_color"]
+    #[diesel(column_name = hair_color)]
     color_de_pelo: String,
 }
 
 #[derive(AsChangeset)]
-#[table_name = "users"]
-struct UserTuple(#[column_name = "name"] String);
+#[diesel(table_name = users)]
+struct UserTuple(#[diesel(column_name = name)] String);
 
 fn main() {}

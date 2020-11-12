@@ -1,13 +1,12 @@
-use proc_macro2::*;
-use syn;
+use proc_macro2::TokenStream;
+use syn::DeriveInput;
 
-use meta::*;
-use util::*;
+use model::Model;
+use util::{ty_for_foreign_derive, wrap_in_dummy_mod};
 
-pub fn derive(mut item: syn::DeriveInput) -> Result<TokenStream, Diagnostic> {
-    let flags =
-        MetaItem::with_name(&item.attrs, "diesel").unwrap_or_else(|| MetaItem::empty("diesel"));
-    let struct_ty = ty_for_foreign_derive(&item, &flags)?;
+pub fn derive(mut item: DeriveInput) -> TokenStream {
+    let model = Model::from_item(&item, true);
+    let struct_ty = ty_for_foreign_derive(&item, &model);
 
     item.generics.params.push(parse_quote!(__ST));
     item.generics.params.push(parse_quote!(__DB));
@@ -28,7 +27,7 @@ pub fn derive(mut item: syn::DeriveInput) -> Result<TokenStream, Diagnostic> {
     }
     let (impl_generics, _, where_clause) = item.generics.split_for_impl();
 
-    Ok(wrap_in_dummy_mod(quote! {
+    wrap_in_dummy_mod(quote! {
         use diesel::deserialize::{self, FromSql, Queryable};
 
         impl #impl_generics Queryable<__ST, __DB> for #struct_ty
@@ -40,5 +39,5 @@ pub fn derive(mut item: syn::DeriveInput) -> Result<TokenStream, Diagnostic> {
                 Ok(row)
             }
         }
-    }))
+    })
 }

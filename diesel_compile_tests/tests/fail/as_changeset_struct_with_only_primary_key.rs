@@ -1,4 +1,5 @@
-#[macro_use] extern crate diesel;
+#[macro_use]
+extern crate diesel;
 
 table! {
     foo {
@@ -8,14 +9,14 @@ table! {
 }
 
 #[derive(AsChangeset)]
-#[table_name="foo"]
+#[diesel(table_name = foo)]
 struct Foo1 {
     id: i32,
     bar: i32,
 }
 
 #[derive(AsChangeset)]
-#[table_name="foo"]
+#[diesel(table_name = foo)]
 struct Foo2 {
     id: i32,
 }

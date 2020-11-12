@@ -13,22 +13,22 @@ struct Post {
 }
 
 #[derive(Insertable)]
-#[table_name = "posts"]
+#[diesel(table_name = posts)]
 struct Post2 {
     id: i32,
 }
 
 #[derive(Insertable)]
-#[table_name = "users"]
+#[diesel(table_name = users)]
 struct User1 {
-    name: String
+    name: String,
 }
 
 #[derive(Insertable)]
-#[table_name = "users"]
+#[diesel(table_name = users)]
 struct User2 {
-    #[column_name = "name"]
-    name: String
+    #[diesel(column_name = name)]
+    name: String,
 }
 
 fn main() {}
