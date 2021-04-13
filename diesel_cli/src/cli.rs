@@ -121,6 +121,10 @@ pub fn build_cli() -> App<'static, 'static> {
                         .help("The format of the migration to be generated."),
                 ),
         )
+        .subcommand(
+            SubCommand::with_name("features")
+                .about("List which features have been compiled into this version of diesel_cli"),
+        )
         .setting(AppSettings::SubcommandRequiredElseHelp);
 
     let setup_subcommand = SubCommand::with_name("setup")
@@ -160,6 +164,16 @@ pub fn build_cli() -> App<'static, 'static> {
                 .index(1)
                 .required(true)
                 .possible_values(&Shell::variants()),
+        );
+
+    let features_subcommand = SubCommand::with_name("features")
+        .about("list support for which database engines have been compiled into this version of diesel")
+        .arg(
+            Arg::with_name("features")
+                .long("features")
+                .short("f")
+                .takes_value(false)
+                .help("Which engines supported."),
         );
 
     let infer_schema_subcommand = SubCommand::with_name("print-schema")
@@ -257,6 +271,7 @@ pub fn build_cli() -> App<'static, 'static> {
         .subcommand(generate_bash_completion_subcommand)
         .subcommand(generate_completions_subcommand)
         .subcommand(infer_schema_subcommand)
+        .subcommand(features_subcommand)
         .setting(AppSettings::SubcommandRequiredElseHelp)
 }
 
