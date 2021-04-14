@@ -162,8 +162,9 @@ pub fn build_cli() -> App<'static, 'static> {
                 .possible_values(&Shell::variants()),
         );
 
-    let features_subcommand = SubCommand::with_name("features")
-        .about("list support for which database engines have been compiled into this version of diesel");
+    let features_subcommand = SubCommand::with_name("features").about(
+        "list support for which database engines have been compiled into this version of diesel"
+    );
 
     let infer_schema_subcommand = SubCommand::with_name("print-schema")
         .setting(AppSettings::VersionlessSubcommands)
