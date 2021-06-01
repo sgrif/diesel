@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        backend: ["postgres", "sqlite", "mysql"]
+        backend: ["postgres"] #, "sqlite", "mysql"]
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
