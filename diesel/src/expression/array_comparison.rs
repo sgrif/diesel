@@ -116,6 +116,17 @@ where
     }
 }
 
+// impl<T, ST, const N: usize> AsInExpression<ST> for [T; N]
+// where T: AsExpression<ST>,
+//       ST: SqlType + TypedExpressionType
+// {
+//     type InExpression = StaticMany<T::Expressions, N>;
+
+//     fn as_in_expression(self) -> Self::InExpression {
+//         todo!()
+//     }
+// }
+
 pub trait MaybeEmpty {
     fn is_empty(&self) -> bool;
 }
@@ -144,6 +155,9 @@ where
         Subselect::new(self)
     }
 }
+
+// #[derive(Debug, Clone, ValidGrouping)]
+// pub struct StaticMany<T, const N:usize>([T; N]);
 
 #[derive(Debug, Clone, ValidGrouping)]
 pub struct Many<T>(Vec<T>);
