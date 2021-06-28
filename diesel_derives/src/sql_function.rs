@@ -142,6 +142,11 @@ pub(crate) fn expand(input: SqlFunctionDecl) -> Result<TokenStream, Diagnostic> 
         }
     };
 
+    let is_supported_on_sqlite = cfg!(feature = "sqlite")
+        && type_args.is_empty()
+        && is_sqlite_type(&return_type)
+        && arg_type.iter().all(|a| is_sqlite_type(a));
+
     if is_aggregate {
         tokens = quote! {
             #tokens
@@ -152,7 +157,7 @@ pub(crate) fn expand(input: SqlFunctionDecl) -> Result<TokenStream, Diagnostic> 
                 type IsAggregate = diesel::expression::is_aggregate::Yes;
             }
         };
-        if cfg!(feature = "sqlite") && type_args.is_empty() {
+        if is_supported_on_sqlite {
             tokens = quote! {
                 #tokens
 
@@ -242,7 +247,7 @@ pub(crate) fn expand(input: SqlFunctionDecl) -> Result<TokenStream, Diagnostic> 
             }
         };
 
-        if cfg!(feature = "sqlite") && type_args.is_empty() && !arg_name.is_empty() {
+        if is_supported_on_sqlite && !arg_name.is_empty() {
             tokens = quote! {
                 #tokens
 
@@ -298,6 +303,62 @@ pub(crate) fn expand(input: SqlFunctionDecl) -> Result<TokenStream, Diagnostic> 
                         #sql_name,
                         false,
                         move |(#(#arg_name,)*)| f(#(#arg_name,)*),
+                    )
+                }
+            };
+        }
+
+        if is_supported_on_sqlite && arg_name.is_empty() {
+            tokens = quote! {
+                #tokens
+
+                use diesel::sqlite::{Sqlite, SqliteConnection};
+                use diesel::serialize::ToSql;
+
+                #[allow(dead_code)]
+                /// Registers an implementation for this function on the given connection
+                ///
+                /// This function must be called for every `SqliteConnection` before
+                /// this SQL function can be used on SQLite. The implementation must be
+                /// deterministic (returns the same result given the same arguments). If
+                /// the function is nondeterministic, call
+                /// `register_nondeterministic_impl` instead.
+                pub fn register_impl<F, Ret>(
+                    conn: &SqliteConnection,
+                    f: F,
+                ) -> QueryResult<()>
+                where
+                    F: Fn() -> Ret + std::panic::UnwindSafe + Send + 'static,
+                    Ret: ToSql<#return_type, Sqlite>,
+                {
+                    conn.register_noarg_sql_function::<#return_type, _, _>(
+                        #sql_name,
+                        true,
+                        f,
+                    )
+                }
+
+                #[allow(dead_code)]
+                /// Registers an implementation for this function on the given connection
+                ///
+                /// This function must be called for every `SqliteConnection` before
+                /// this SQL function can be used on SQLite.
+                /// `register_nondeterministic_impl` should only be used if your
+                /// function can return different results with the same arguments (e.g.
+                /// `random`). If your function is deterministic, you should call
+                /// `register_impl` instead.
+                pub fn register_nondeterministic_impl<F, Ret>(
+                    conn: &SqliteConnection,
+                    mut f: F,
+                ) -> QueryResult<()>
+                where
+                    F: FnMut() -> Ret + std::panic::UnwindSafe + Send + 'static,
+                    Ret: ToSql<#return_type, Sqlite>,
+                {
+                    conn.register_noarg_sql_function::<#return_type, _, _>(
+                        #sql_name,
+                        false,
+                        f,
                     )
                 }
             };
@@ -391,4 +452,42 @@ impl ToTokens for StrictFnArg {
         self.colon_token.to_tokens(tokens);
         self.name.to_tokens(tokens);
     }
+}
+
+fn is_sqlite_type(ty: &syn::Type) -> bool {
+    let last_segment = if let syn::Type::Path(tp) = ty {
+        if let Some(segment) = tp.path.segments.last() {
+            segment
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    };
+
+    let ident = last_segment.ident.to_string();
+    if ident == "Nullable" {
+        if let syn::PathArguments::AngleBracketed(ref ab) = last_segment.arguments {
+            if let Some(syn::GenericArgument::Type(ty)) = ab.args.first() {
+                return is_sqlite_type(&ty);
+            }
+        }
+        return false;
+    }
+
+    [
+        "BigInt",
+        "Binary",
+        "Bool",
+        "Date",
+        "Double",
+        "Float",
+        "Integer",
+        "Numeric",
+        "SmallInt",
+        "Text",
+        "Time",
+        "Timestamp",
+    ]
+    .contains(&ident.as_str())
 }
