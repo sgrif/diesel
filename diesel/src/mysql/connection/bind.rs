@@ -10,6 +10,7 @@ use crate::mysql::types::MYSQL_TIME;
 use crate::mysql::{MysqlType, MysqlValue};
 use crate::result::QueryResult;
 
+#[derive(Clone)]
 pub struct Binds {
     data: Vec<BindData>,
 }
@@ -33,7 +34,7 @@ impl Binds {
             .iter()
             .zip(
                 types
-                    .into_iter()
+                    .iter()
                     .map(|o| o.as_ref())
                     .chain(std::iter::repeat(None)),
             )
@@ -76,10 +77,6 @@ impl Binds {
         for data in &mut self.data {
             data.update_buffer_length();
         }
-    }
-
-    pub fn len(&self) -> usize {
-        self.data.len()
     }
 }
 
@@ -126,7 +123,7 @@ impl From<u32> for Flags {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BindData {
     tpe: ffi::enum_field_types,
     bytes: Vec<u8>,
