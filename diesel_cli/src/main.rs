@@ -62,8 +62,6 @@ fn main() {
     }
 }
 
-// https://github.com/rust-lang-nursery/rust-clippy/issues/2927#issuecomment-405705595
-#[allow(clippy::similar_names)]
 fn run_migration_command(
     matches: &ArgMatches,
 ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
@@ -562,6 +560,10 @@ fn run_infer_schema(matches: &ArgMatches) -> Result<(), Box<dyn Error + Send + S
     if let Some(types) = matches.values_of("import-types") {
         let types = types.map(String::from).collect();
         config.import_types = Some(types);
+    }
+
+    if matches.is_present("generate-custom-type-definitions") {
+        config.generate_missing_sql_type_definitions = Some(false);
     }
 
     run_print_schema(&database_url, &config, &mut stdout())?;
