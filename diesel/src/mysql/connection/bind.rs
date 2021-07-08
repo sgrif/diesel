@@ -10,6 +10,7 @@ use crate::mysql::types::MYSQL_TIME;
 use crate::mysql::{MysqlType, MysqlValue};
 use crate::result::QueryResult;
 
+#[derive(Clone)]
 pub struct Binds {
     data: Vec<BindData>,
 }
@@ -27,11 +28,11 @@ impl Binds {
         Ok(Binds { data })
     }
 
-    pub fn from_output_types(types: Vec<Option<MysqlType>>, metadata: &StatementMetadata) -> Self {
+    pub fn from_output_types(types: &[Option<MysqlType>], metadata: &StatementMetadata) -> Self {
         let data = metadata
             .fields()
             .iter()
-            .zip(types.into_iter().chain(std::iter::repeat(None)))
+            .zip(types.iter().copied().chain(std::iter::repeat(None)))
             .map(|(field, tpe)| BindData::for_output(tpe, field))
             .collect();
 
@@ -71,10 +72,6 @@ impl Binds {
         for data in &mut self.data {
             data.update_buffer_length();
         }
-    }
-
-    pub fn len(&self) -> usize {
-        self.data.len()
     }
 }
 
@@ -121,7 +118,7 @@ impl From<u32> for Flags {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BindData {
     tpe: ffi::enum_field_types,
     bytes: Vec<u8>,
@@ -706,9 +703,8 @@ mod tests {
             )
             .unwrap();
 
-        let mut stmt = conn
-            .prepare_query(&crate::sql_query(
-                "SELECT
+        let mut stmt = conn.prepared_query(&crate::sql_query(
+            "SELECT
                     tiny_int, small_int, medium_int, int_col,
                     big_int, unsigned_int, zero_fill_int,
                     numeric_col, decimal_col, float_col, double_col, bit_col,
@@ -718,12 +714,11 @@ mod tests {
                     ST_AsText(polygon_col), ST_AsText(multipoint_col), ST_AsText(multilinestring_col),
                     ST_AsText(multipolygon_col), ST_AsText(geometry_collection), json_col
                  FROM all_mysql_types",
-            ))
-            .unwrap();
+        )).unwrap();
 
         let metadata = stmt.metadata().unwrap();
         let mut output_binds =
-            Binds::from_output_types(vec![None; metadata.fields().len()], &metadata);
+            Binds::from_output_types(&vec![None; metadata.fields().len()], &metadata);
         stmt.execute_statement(&mut output_binds).unwrap();
         stmt.populate_row_buffers(&mut output_binds).unwrap();
 
@@ -732,15 +727,6 @@ mod tests {
             .into_iter()
             .zip(metadata.fields())
             .collect::<Vec<_>>();
-
-        macro_rules! matches {
-            ($expression:expr, $( $pattern:pat )|+ $( if $guard: expr )?) => {
-                match $expression {
-                    $( $pattern )|+ $( if $guard )? => true,
-                    _ => false
-                }
-            }
-        }
 
         let tiny_int_col = &results[0].0;
         assert_eq!(tiny_int_col.tpe, ffi::enum_field_types::MYSQL_TYPE_TINY);
@@ -1050,9 +1036,9 @@ mod tests {
         assert!(!polygon_col.flags.contains(Flags::ENUM_FLAG));
         assert!(!polygon_col.flags.contains(Flags::BINARY_FLAG));
         assert_eq!(
-            to_value::<Text, String>(polygon_col).unwrap(),
-            "MULTIPOLYGON(((28 26,28 0,84 0,84 42,28 26),(52 18,66 23,73 9,48 6,52 18)),((59 18,67 18,67 13,59 13,59 18)))"
-        );
+                to_value::<Text, String>(polygon_col).unwrap(),
+                "MULTIPOLYGON(((28 26,28 0,84 0,84 42,28 26),(52 18,66 23,73 9,48 6,52 18)),((59 18,67 18,67 13,59 13,59 18)))"
+            );
 
         let geometry_collection = &results[32].0;
         assert_eq!(

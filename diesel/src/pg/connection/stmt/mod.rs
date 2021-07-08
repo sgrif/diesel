@@ -10,17 +10,17 @@ use crate::result::QueryResult;
 
 pub use super::raw::RawConnection;
 
-pub struct Statement {
+pub(crate) struct Statement {
     name: CString,
     param_formats: Vec<libc::c_int>,
 }
 
 impl Statement {
     #[allow(clippy::ptr_arg)]
-    pub fn execute(
-        &self,
-        raw_connection: &mut RawConnection,
-        param_data: &Vec<Option<Vec<u8>>>,
+    pub fn execute<'a>(
+        &'_ self,
+        raw_connection: &'a mut RawConnection,
+        param_data: &'_ Vec<Option<Vec<u8>>>,
     ) -> QueryResult<PgResult> {
         let params_pointer = param_data
             .iter()

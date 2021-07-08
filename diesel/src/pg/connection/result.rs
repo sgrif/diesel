@@ -4,16 +4,19 @@ use self::pq_sys::*;
 use std::ffi::CStr;
 use std::num::NonZeroU32;
 use std::os::raw as libc;
+use std::rc::Rc;
 use std::{slice, str};
 
 use super::raw::RawResult;
 use super::row::PgRow;
 use crate::result::{DatabaseErrorInformation, DatabaseErrorKind, Error, QueryResult};
+use crate::util::OnceCell;
 
-pub struct PgResult {
+pub(crate) struct PgResult {
     internal_result: RawResult,
     column_count: usize,
     row_count: usize,
+    column_name_map: OnceCell<Vec<Option<String>>>,
 }
 
 impl PgResult {
@@ -28,6 +31,7 @@ impl PgResult {
                     internal_result,
                     column_count,
                     row_count,
+                    column_name_map: OnceCell::new(),
                 })
             }
             ExecStatusType::PGRES_EMPTY_QUERY => {
@@ -82,7 +86,7 @@ impl PgResult {
         self.row_count
     }
 
-    pub fn get_row(&self, idx: usize) -> PgRow {
+    pub fn get_row(self: Rc<Self>, idx: usize) -> PgRow {
         PgRow::new(self, idx)
     }
 
@@ -120,17 +124,29 @@ impl PgResult {
     }
 
     pub fn column_name(&self, col_idx: usize) -> Option<&str> {
-        unsafe {
-            let ptr = PQfname(self.internal_result.as_ptr(), col_idx as libc::c_int);
-            if ptr.is_null() {
-                None
-            } else {
-                Some(CStr::from_ptr(ptr).to_str().expect(
-                    "Expect postgres field names to be UTF-8, because we \
+        self.column_name_map
+            .get_or_init(|| {
+                (0..self.column_count)
+                    .map(|idx| unsafe {
+                        let ptr = PQfname(self.internal_result.as_ptr(), idx as libc::c_int);
+                        if ptr.is_null() {
+                            None
+                        } else {
+                            Some(
+                                CStr::from_ptr(ptr)
+                                    .to_str()
+                                    .expect(
+                                        "Expect postgres field names to be UTF-8, because we \
                      requested UTF-8 encoding on connection setup",
-                ))
-            }
-        }
+                                    )
+                                    .to_owned(),
+                            )
+                        }
+                    })
+                    .collect()
+            })
+            .get(col_idx)
+            .and_then(|n| n.as_ref().map(|n| n as &str))
     }
 
     pub fn column_count(&self) -> usize {
