@@ -4,7 +4,7 @@ use super::operators::*;
 use crate::dsl;
 use crate::expression::grouped::Grouped;
 use crate::expression::{AsExpression, Expression, IntoSql, TypedExpressionType};
-use crate::sql_types::{Array, Cidr, Inet, Nullable, Range, SqlType, Text};
+use crate::sql_types::{Array, Cidr, Inet, Jsonb, Nullable, Range, SqlType, Text};
 
 /// PostgreSQL specific methods which are present on all expressions.
 pub trait PgExpressionMethods: Expression + Sized {
@@ -1094,7 +1094,7 @@ pub trait PgNetExpressionMethods: Expression + Sized {
 
     /// Creates a PostgreSQL `-` expression.
     ///
-    /// This operator substracts an address from an address to compute the distance between the two
+    /// This operator subtracts an address from an address to compute the distance between the two.
     ///
     /// # Example
     ///
@@ -1159,3 +1159,114 @@ impl InetOrCidr for Inet {}
 impl InetOrCidr for Cidr {}
 impl InetOrCidr for Nullable<Inet> {}
 impl InetOrCidr for Nullable<Cidr> {}
+
+/// PostgreSQL specific expression methods using the `Jsonb` datatype.
+pub trait PgJsonbExpressionMethods: Expression + Sized {
+    /// Creates a PostgreSQL `||` operator
+    ///
+    /// This operator merges two `Jsonb` objects.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # include!("../../doctest_setup.rs");
+    /// #
+    /// # table! {
+    /// #     characters {
+    /// #         id -> Integer,
+    /// #         a_b_c -> Jsonb,
+    /// #         d_e_f -> Jsonb,
+    /// #     }
+    /// # }
+    /// #
+    /// # #[cfg(feature = "serde_json")]
+    /// # fn main() {
+    /// #     run_test();
+    /// # }
+    /// #
+    /// # fn run_test() {
+    /// #     use diesel::insert_into;
+    /// #     use diesel::associations::HasTable;
+    /// #     use self::characters::dsl::*;
+    /// #     use serde_json::json;
+    /// #
+    /// #     let connection = connection_no_data();
+    /// #     diesel::sql_query("CREATE TABLE characters (
+    /// #         id SERIAL PRIMARY KEY,
+    /// #         a_b_c JSONB NOT NULL,
+    /// #         d_e_f JSONB NOT NULL
+    /// #     )").execute(&connection);
+    /// #
+    /// #     // insert into a_b_c
+    /// #     let a_b_c_data = json!({
+    /// #            "a": 1,
+    /// #            "b": 1,
+    /// #            "c": 1,
+    /// #            "letters": [
+    /// #                 "a",
+    /// #                 "b",
+    /// #                 "c",
+    /// #            ],
+    /// #     });
+    /// #     diesel::insert_into(a_b_c).values(a_b_c_data);
+    /// #
+    /// #     // insert into d_e_f
+    /// #     let d_e_f_data = json!({
+    /// #             "d": 1,
+    /// #             "e": 2,
+    /// #             "f": 3,
+    /// #             "letters": [
+    /// #                 "d",
+    /// #                 "e",
+    /// #                 "f",
+    /// #             ]
+    /// #     });
+    /// #     diesel::insert_into(d_e_f).values(d_e_f_data);
+    /// #
+    ///       let projected_merged_json = json!({
+    ///               "a": 1,
+    ///               "b": 2,
+    ///               "c": 3,
+    ///               "d": 1,
+    ///               "e": 2,
+    ///               "f": 3,
+    ///               "letters": [
+    ///                   "a",
+    ///                   "b",
+    ///                   "c",
+    ///                   "d",
+    ///                   "e",
+    ///                   "f",
+    ///               ]
+    ///     });
+    ///
+    ///       let merged_json = characters::table.select(characters::a_b_c.merge(characters::d_e_f)).load(&connection);
+    ///       assert_eq!(projected_merged_json, merged_json);
+    /// #
+    /// # }
+    /// #
+    /// # #[cfg(not(feature = "serde_json"))]
+    /// # fn main() {}
+    /// ```
+    fn merge<T: AsExpression<Self::SqlType>>(self, other: T) -> dsl::JsonbMerge<Self, T::Expression>
+    where
+        <Self as Expression>::SqlType: SqlType,
+    {
+        Grouped(JsonbMerge::<Self, T::Expression>::new(
+            self,
+            other.as_expression(),
+        ))
+    }
+}
+
+/// Hack for adding support for nullable `jsonb`.
+pub trait JsonbOrNullableJsonb {}
+impl JsonbOrNullableJsonb for Jsonb {}
+impl JsonbOrNullableJsonb for Nullable<Jsonb> {}
+
+impl<T> PgJsonbExpressionMethods for T
+where
+    T: Expression,
+    T::SqlType: JsonbOrNullableJsonb,
+{
+}

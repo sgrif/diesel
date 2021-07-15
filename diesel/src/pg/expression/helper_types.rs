@@ -78,3 +78,7 @@ pub type OrNet<Lhs, Rhs> = Grouped<super::operators::OrNet<Lhs, AsExprOf<Rhs, In
 /// The return type of `lsh.diff(rhs)`
 pub type DifferenceNet<Lhs, Rhs> =
     Grouped<super::operators::DifferenceNet<Lhs, AsExprOf<Rhs, Inet>>>;
+
+/// The return type of `lsh.jsonb_merge(rhs)`
+pub type JsonbMerge<Lhs, Rhs> =
+    Grouped<super::operators::JsonbMerge<Lhs, AsExprOf<Rhs, SqlTypeOf<Lhs>>>>;
