@@ -187,6 +187,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: version
+
       - name: Test diesel (nightly)
         if: matrix.rust == 'nightly'
         uses: actions-rs/cargo@v1

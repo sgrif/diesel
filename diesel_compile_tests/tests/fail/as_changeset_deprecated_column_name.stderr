@@ -1,14 +1,14 @@
-warning: The form `table_name(value)` is deprecated. Use `table_name = "value"` instead
+warning: #[table_name] attribute form is deprecated
   --> $DIR/as_changeset_deprecated_column_name.rs:12:3
    |
 12 | #[table_name(users)]
-   |   ^^^^^^^^^^^^^^^^^
+   |   ^^^^^^^^^^
 
-warning: The form `column_name(value)` is deprecated. Use `column_name = "value"` instead
-  --> $DIR/as_changeset_deprecated_column_name.rs:15:7
+error: `table_name` is either unexpected or has bad format
+  --> $DIR/as_changeset_deprecated_column_name.rs:12:3
    |
-15 |     #[column_name(name)]
-   |       ^^^^^^^^^^^^^^^^^
+12 | #[table_name(users)]
+   |   ^^^^^^^^^^
 
 error: warnings
   --> $DIR/as_changeset_deprecated_column_name.rs:21:5

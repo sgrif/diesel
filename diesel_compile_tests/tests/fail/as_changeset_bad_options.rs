@@ -9,48 +9,48 @@ table! {
 }
 
 #[derive(AsChangeset)]
-#[table_name = "users"]
-#[changeset_options(treat_none_as_null("true"))]
+#[diesel(table_name = users)]
+#[diesel(changeset_options(treat_none_as_null("true")))]
 struct UserForm1 {
     id: i32,
     name: String,
 }
 
 #[derive(AsChangeset)]
-#[table_name = "users"]
-#[changeset_options(treat_none_as_null)]
+#[diesel(table_name = users)]
+#[diesel(changeset_options(treat_none_as_null))]
 struct UserForm2 {
     id: i32,
     name: String,
 }
 
 #[derive(AsChangeset)]
-#[table_name = "users"]
-#[changeset_options(treat_none_as_null = "foo")]
+#[diesel(table_name = users)]
+#[diesel(changeset_options(treat_none_as_null = "foo"))]
 struct UserForm3 {
     id: i32,
     name: String,
 }
 
 #[derive(AsChangeset)]
-#[table_name = "users"]
-#[changeset_options()]
+#[diesel(table_name = users)]
+#[diesel(changeset_options())]
 struct UserForm4 {
     id: i32,
     name: String,
 }
 
 #[derive(AsChangeset)]
-#[table_name = "users"]
-#[changeset_options = "treat_none_as_null"]
+#[diesel(table_name = users)]
+#[diesel(changeset_options = "treat_none_as_null")]
 struct UserForm5 {
     id: i32,
     name: String,
 }
 
 #[derive(AsChangeset)]
-#[table_name = "users"]
-#[changeset_options]
+#[diesel(table_name = users)]
+#[diesel(changeset_options)]
 struct UserForm6 {
     id: i32,
     name: String,

@@ -9,7 +9,7 @@ table! {
 }
 
 #[derive(Associations)]
-#[belongs_to(Bar)]
+#[diesel(belongs_to(Bar))]
 struct Foo {
     bar_id: i32,
 }

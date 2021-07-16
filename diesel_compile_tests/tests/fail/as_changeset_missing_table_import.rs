@@ -8,7 +8,7 @@ struct User {
 }
 
 #[derive(AsChangeset)]
-#[table_name = "users"]
+#[diesel(table_name = users)]
 struct UserForm {
     id: i32,
     name: String,

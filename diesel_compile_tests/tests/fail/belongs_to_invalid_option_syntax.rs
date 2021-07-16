@@ -14,26 +14,26 @@ table! {
 }
 
 #[derive(Identifiable)]
-#[table_name = "bar"]
+#[diesel(table_name = bar)]
 struct Bar {
     id: i32,
 }
 
 #[derive(Identifiable)]
-#[table_name = "bar"]
+#[diesel(table_name = bar)]
 struct Baz {
     id: i32,
 }
 
 #[derive(Associations)]
-#[belongs_to]
-#[belongs_to = "Bar"]
-#[belongs_to()]
-#[belongs_to(foreign_key = "bar_id")]
-#[belongs_to(Bar, foreign_key)]
-#[belongs_to(Bar, foreign_key(bar_id))]
-#[belongs_to(Baz, foreign_key = "bar_id", random_option)]
-#[table_name = "foo"]
+#[diesel(belongs_to)]
+#[diesel(belongs_to = "Bar")]
+#[diesel(belongs_to())]
+#[diesel(belongs_to(foreign_key = bar_id))]
+#[diesel(belongs_to(Bar, foreign_key))]
+#[diesel(belongs_to(Bar, foreign_key(bar_id)))]
+#[diesel(belongs_to(Baz, foreign_key = bar_id, random_option))]
+#[diesel(table_name = foo)]
 struct Foo {
     bar_id: i32,
 }

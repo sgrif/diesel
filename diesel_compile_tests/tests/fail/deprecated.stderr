@@ -1,0 +1,17 @@
+warning: #[table_name] attribute form is deprecated
+  --> $DIR/deprecated.rs:12:3
+   |
+12 | #[table_name = "users"]
+   |   ^^^^^^^^^^
+
+error: expected identifier
+  --> $DIR/deprecated.rs:12:16
+   |
+12 | #[table_name = "users"]
+   |                ^^^^^^^
+
+error: warnings
+  --> $DIR/deprecated.rs:22:5
+   |
+22 |     compile_error!("warnings");
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^

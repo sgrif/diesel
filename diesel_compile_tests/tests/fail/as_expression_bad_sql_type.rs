@@ -2,10 +2,19 @@ extern crate diesel;
 use diesel::expression::AsExpression;
 
 #[derive(AsExpression)]
-#[sql_type(Foo)]
-#[sql_type]
-#[sql_type = "@%&&*"]
-#[sql_type = "1omg"]
+#[diesel(sql_type)]
 struct Lol;
+
+#[derive(AsExpression)]
+#[diesel(sql_type(Foo))]
+struct Lol2;
+
+#[derive(AsExpression)]
+#[diesel(sql_type = "@%&&*")]
+struct Lol3;
+
+#[derive(AsExpression)]
+#[diesel(sql_type = 1omg)]
+struct Lol4;
 
 fn main() {}

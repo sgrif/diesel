@@ -1,12 +1,12 @@
-use proc_macro2;
-use syn;
+use proc_macro2::TokenStream;
+use syn::DeriveInput;
 
-use field::*;
-use model::*;
-use util::*;
+use field::Field;
+use model::Model;
+use util::wrap_in_dummy_mod;
 
-pub fn derive(item: syn::DeriveInput) -> Result<proc_macro2::TokenStream, Diagnostic> {
-    let model = Model::from_item(&item)?;
+pub fn derive(item: DeriveInput) -> TokenStream {
+    let model = Model::from_item(&item, false);
 
     let (_, ty_generics, _) = item.generics.split_for_impl();
     let mut generics = item.generics.clone();
@@ -17,18 +17,10 @@ pub fn derive(item: syn::DeriveInput) -> Result<proc_macro2::TokenStream, Diagno
 
     let struct_name = &item.ident;
 
-    let field_columns_ty = model
-        .fields()
-        .iter()
-        .map(|f| field_column_ty(f, &model))
-        .collect::<Result<Vec<_>, _>>()?;
-    let field_columns_inst = model
-        .fields()
-        .iter()
-        .map(|f| field_column_inst(f, &model))
-        .collect::<Result<Vec<_>, _>>()?;
+    let field_columns_ty = model.fields().iter().map(|f| field_column_ty(f, &model));
+    let field_columns_inst = model.fields().iter().map(|f| field_column_inst(f, &model));
 
-    Ok(wrap_in_dummy_mod(quote! {
+    wrap_in_dummy_mod(quote! {
         use diesel::expression::Selectable;
 
         impl #impl_generics Selectable<__DB>
@@ -41,27 +33,27 @@ pub fn derive(item: syn::DeriveInput) -> Result<proc_macro2::TokenStream, Diagno
                 (#(#field_columns_inst,)*)
             }
         }
-    }))
+    })
 }
 
-fn field_column_ty(field: &Field, model: &Model) -> Result<syn::Type, Diagnostic> {
-    if field.has_flag("embed") {
+fn field_column_ty(field: &Field, model: &Model) -> TokenStream {
+    if field.embed {
         let embed_ty = &field.ty;
-        Ok(parse_quote!(<#embed_ty as Selectable<__DB>>::SelectExpression))
+        quote!(<#embed_ty as Selectable<__DB>>::SelectExpression)
     } else {
         let table_name = model.table_name();
-        let column_name = field.column_name_ident();
-        Ok(parse_quote!(#table_name::#column_name))
+        let column_name = field.column_name();
+        quote!(#table_name::#column_name)
     }
 }
 
-fn field_column_inst(field: &Field, model: &Model) -> Result<syn::Expr, Diagnostic> {
-    if field.has_flag("embed") {
+fn field_column_inst(field: &Field, model: &Model) -> TokenStream {
+    if field.embed {
         let embed_ty = &field.ty;
-        Ok(parse_quote!(<#embed_ty as Selectable<__DB>>::construct_selection()))
+        quote!(<#embed_ty as Selectable<__DB>>::construct_selection())
     } else {
         let table_name = model.table_name();
-        let column_name = field.column_name_ident();
-        Ok(parse_quote!(#table_name::#column_name))
+        let column_name = field.column_name();
+        quote!(#table_name::#column_name)
     }
 }

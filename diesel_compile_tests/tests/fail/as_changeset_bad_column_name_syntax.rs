@@ -9,9 +9,9 @@ table! {
 }
 
 #[derive(AsChangeset)]
-#[table_name = "users"]
+#[diesel(table_name = users)]
 struct User {
-    #[column_name]
+    #[diesel(column_name)]
     name: String,
 }
 

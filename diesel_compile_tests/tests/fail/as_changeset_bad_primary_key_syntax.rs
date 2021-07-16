@@ -9,7 +9,7 @@ table! {
 }
 
 #[derive(AsChangeset)]
-#[primary_key(id, bar = "baz", qux(id))]
+#[diesel(primary_key(id, bar = "baz", qux(id)))]
 struct UserForm {
     id: i32,
     name: String,

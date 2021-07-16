@@ -3,39 +3,33 @@ error[E0433]: failed to resolve: use of undeclared crate or module `posts`
    |
 11 | struct Post {
    |        ^^^^ use of undeclared crate or module `posts`
-   |
-   = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0433]: failed to resolve: use of undeclared crate or module `posts`
-  --> $DIR/insertable_missing_table_or_column.rs:16:16
+  --> $DIR/insertable_missing_table_or_column.rs:16:23
    |
-16 | #[table_name = "posts"]
-   |                ^^^^^^^ use of undeclared crate or module `posts`
+16 | #[diesel(table_name = posts)]
+   |                       ^^^^^ use of undeclared crate or module `posts`
 
 error[E0412]: cannot find type `name` in module `users`
   --> $DIR/insertable_missing_table_or_column.rs:24:5
    |
-24 |     name: String
+24 |     name: String,
    |     ^^^^ not found in `users`
 
 error[E0425]: cannot find value `name` in module `users`
   --> $DIR/insertable_missing_table_or_column.rs:24:5
    |
-24 |     name: String
+24 |     name: String,
    |     ^^^^ not found in `users`
 
 error[E0412]: cannot find type `name` in module `users`
-  --> $DIR/insertable_missing_table_or_column.rs:30:21
+  --> $DIR/insertable_missing_table_or_column.rs:30:28
    |
-30 |     #[column_name = "name"]
-   |                     ^^^^^^ not found in `users`
-   |
-   = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)
+30 |     #[diesel(column_name = name)]
+   |                            ^^^^ not found in `users`
 
 error[E0425]: cannot find value `name` in module `users`
-  --> $DIR/insertable_missing_table_or_column.rs:30:21
+  --> $DIR/insertable_missing_table_or_column.rs:30:28
    |
-30 |     #[column_name = "name"]
-   |                     ^^^^^^ not found in `users`
-   |
-   = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)
+30 |     #[diesel(column_name = name)]
+   |                            ^^^^ not found in `users`
