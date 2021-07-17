@@ -162,6 +162,10 @@ pub fn build_cli() -> App<'static, 'static> {
                 .possible_values(&Shell::variants()),
         );
 
+    let features_subcommand = SubCommand::with_name("features").about(
+        "lists all the database engines available with this version of diesel"
+    );
+
     let infer_schema_subcommand = SubCommand::with_name("print-schema")
         .setting(AppSettings::VersionlessSubcommands)
         .about("Print table definitions for database schema.")
@@ -262,6 +266,7 @@ pub fn build_cli() -> App<'static, 'static> {
         .subcommand(generate_bash_completion_subcommand)
         .subcommand(generate_completions_subcommand)
         .subcommand(infer_schema_subcommand)
+        .subcommand(features_subcommand)
         .setting(AppSettings::SubcommandRequiredElseHelp)
 }
 

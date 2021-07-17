@@ -58,6 +58,7 @@ fn main() {
         ("bash-completion", Some(matches)) => generate_bash_completion_command(matches),
         ("completions", Some(matches)) => generate_completions_command(matches),
         ("print-schema", Some(matches)) => run_infer_schema(matches).unwrap_or_else(handle_error),
+        ("features", Some(_)) => show_which_engines_supported().unwrap_or_else(handle_error),
         _ => unreachable!("The cli parser should prevent reaching here"),
     }
 }
@@ -606,6 +607,30 @@ fn regenerate_schema_if_file_specified(
             let schema = print_schema::output_schema(&database_url, &config.print_schema)?;
             file.write_all(schema.as_bytes())?;
         }
+    }
+    Ok(())
+}
+
+// List which features have been compiled into this version of diesel_cli
+fn show_which_engines_supported() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
+    let mut features: Vec<&str> = Vec::new();
+    #[cfg(feature = "postgres")]
+    features.push("postgres");
+    #[cfg(feature = "mysql")]
+    features.push("mysql");
+    #[cfg(feature = "sqlite")]
+    features.push("sqlite");
+
+    for f in &features {
+        match f as &str {
+            "postgres" | "sqlite" | "mysql" => print!("{} ", f),
+            _ => {}
+        };
+    }
+    if features.is_empty() {
+        println!("[warning] No features detected");
+    } else {
+        println!();
     }
     Ok(())
 }
